@@ -76,6 +76,24 @@ public class OlympusContentProvider extends ContentProvider {
     @Override
     public Uri insert(Uri uri, ContentValues values) {
 
+        String firstName = values.getAsString(MemberEntry.COLUMN_FIRST_NAME);
+        if (firstName==null){
+            throw new IllegalArgumentException("You have to unput first name");
+        }
+        String lastName = values.getAsString(MemberEntry.COLUMN_LAST_NAME);
+        if (lastName==null){
+            throw new IllegalArgumentException("You have to unput last name");
+        }
+        Integer gender=values.getAsInteger(MemberEntry.COLUMN_GENDER);
+        if (gender==null || !(gender==MemberEntry.GENDER_FEMALE || gender==MemberEntry.GENDER_MALE || gender==MemberEntry.GENDER_UNKNOWN)){
+            throw new IllegalArgumentException("You have to select gender");
+        }
+        String sport = values.getAsString(MemberEntry.COLUMN_SPORT);
+        if (sport==null){
+            throw new IllegalArgumentException("You have to input sport");
+        }
+
+
         SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
 
         int match = uriMatcher.match(uri);
@@ -99,16 +117,103 @@ public class OlympusContentProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+
+        SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+
+        int match = uriMatcher.match(uri);
+
+        switch (match) {
+            case MEMBERS:
+                return db.delete(MemberEntry.TABLE_NAME, selection, selectionArgs);
+            case MEMBER_ID:
+                // selection ="_id=?"
+                //selectionArgs = 34
+                selection = MemberEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return db.delete(MemberEntry.TABLE_NAME, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Can`t delete this URI" + uri);
+
+        }
     }
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return 0;
+
+        if(values.containsKey(MemberEntry.COLUMN_FIRST_NAME)){
+
+            String firstName = values.getAsString(MemberEntry.COLUMN_FIRST_NAME);
+            if (firstName==null){
+                throw new IllegalArgumentException("You have to unput first name");
+            }
+        }
+
+        if(values.containsKey(MemberEntry.COLUMN_LAST_NAME)){
+
+            String lastName = values.getAsString(MemberEntry.COLUMN_LAST_NAME);
+            if (lastName==null){
+                throw new IllegalArgumentException("You have to unput last name");
+            }
+
+        }
+
+        if(values.containsKey(MemberEntry.COLUMN_GENDER)){
+
+            Integer gender=values.getAsInteger(MemberEntry.COLUMN_GENDER);
+            if (gender==null || !(gender==MemberEntry.GENDER_FEMALE || gender==MemberEntry.GENDER_MALE || gender==MemberEntry.GENDER_UNKNOWN)){
+                throw new IllegalArgumentException("You have to select gender");
+            }
+
+        }
+
+        if (values.containsKey(MemberEntry.COLUMN_SPORT)){
+
+
+            String sport = values.getAsString(MemberEntry.COLUMN_SPORT);
+            if (sport==null){
+                throw new IllegalArgumentException("You have to input sport");
+            }
+
+        }
+
+
+
+        SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+
+        int match = uriMatcher.match(uri);
+
+        switch (match) {
+            case MEMBERS:
+                return db.update(MemberEntry.TABLE_NAME, values, selection, selectionArgs);
+            case MEMBER_ID:
+                // selection ="_id=?"
+                //selectionArgs = 34
+                selection = MemberEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return db.update(MemberEntry.TABLE_NAME, values, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Can`t update this URI" + uri);
+
+        }
     }
 
     @Override
     public String getType(Uri uri) {
-        return null;
+
+        int match = uriMatcher.match(uri);
+
+        switch (match) {
+            case MEMBERS:
+
+         return MemberEntry.CONTENT_MULTIPLE_ITEMS;
+
+            case MEMBER_ID:
+
+         return MemberEntry.CONTENT_SINGLE_ITEM;
+
+            default:
+                throw new IllegalArgumentException("Unknown URI" + uri);
+
+        }
     }
 }
